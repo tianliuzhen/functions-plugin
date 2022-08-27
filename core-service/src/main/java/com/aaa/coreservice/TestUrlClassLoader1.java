@@ -36,14 +36,20 @@ public class TestUrlClassLoader1 {
         File file = new File("F:\\WorkSpace\\MyGithub\\functions\\plugin-biz\\target\\plugin-biz-0.0.1-SNAPSHOT.jar");
         // 这个 jar 是跟插件冲突的jar版本位置
         File file2 = new File("F:\\MavenRepository\\com\\fasterxml\\jackson\\core\\jackson-core\\2.11.0\\jackson-core-2.11.0.jar");
-        URL[] urls = new URL[]{file.toURI().toURL(), file2.toURI().toURL()};
+        File file3 = new File("F:\\WorkSpace\\MyGithub\\functions\\plugin-common-service\\target\\plugin-common-service-0.0.1-SNAPSHOT.jar");
 
-        URLClassLoader myClassLoader = new URLClassLoader(urls);
+        URL[] urls = new URL[]{file.toURI().toURL(), file2.toURI().toURL(),file3.toURI().toURL()};
+
+        /**
+         * 这个此时是默认的类加载器机制（遵循双亲委派机制），
+         * 当前类加载jackson-core 版本是：2.5.4，
+         * 所以执行会报错：java.lang.NoSuchMethodError
+         */
+        URLClassLoader myClassLoader = new URLClassLoader(urls,null);
         Class<?> aClass = myClassLoader.loadClass("com.aaa.plugincommonservice.api.CommonUrlParse");
         Object obj = aClass.newInstance();
         // 利用反射创建对象
         Method method = aClass.getMethod("parse");
-
         //获取parse方法
         Object xxx = method.invoke(obj);
 

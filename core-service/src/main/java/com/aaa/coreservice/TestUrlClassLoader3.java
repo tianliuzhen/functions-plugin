@@ -36,12 +36,20 @@ public class TestUrlClassLoader3 {
          *
          * 解决:
          *      设置父加载器为null或者为 ExtClassLoader
-         *          这个是能解决：jackson-core 版本 冲突的问题
+         *      为什么能解决呢？
+         *          设置父加载器为null或者Ext，就打破了双亲委派，就当前加载器自己去加载，把向上传递机制给断了
+         *      这个是能解决：jackson-core 版本 冲突的问题
+         *
          * 加载过程：
+         *  父加载器 = ExtClassLoader:
          *      myClassLoader 的父亲是 ExtClassLoader，所以这时候 myClassLoader 跟 appClassLoader 是兄弟关系
-         *      myClassLoader 在加载 ParseExcel 时，会加载 JsonFactory，同时遵循双亲委派模式
+         *      myClassLoader 在加载 CommonUrlParse 时，会加载 JsonFactory，同时遵循双亲委派模式
          *      所以 ExtClassLoader 会尝试加载 JsonFactory 这个类，不会加载成功，转而由 myClassLoader 自己去加载 JsonFactory，加载成功，版本是2.11
          *      2.11 版本的 JsonFactory 有 getFormatGeneratorFeatures 方法，所以正常运行
+         *
+         *  父加载器 =  null
+         *      这个就比较好理解了，父类为空，只能自己去加载，自己去加载就打破双亲委派机制了，
+         *      只在自己的内部容器中寻找类去加载
          *
          * 缺陷：
          *      如果这样解决，所有的引用jar都要从 设置的URLClassLoader 进行解析了
@@ -49,6 +57,11 @@ public class TestUrlClassLoader3 {
          */
 
         // 其实要尽量避免这种jar版本冲突的问题，而不是从加载的方式去解决
+
+        // 打印当前类加载器
+        System.out.println("当前类加载器: " + TestUrlClassLoader3.class.getClassLoader());
+        // 打印当前类加载器Parent
+        System.out.println("当前类加载器父类: " + TestUrlClassLoader3.class.getClassLoader().getParent());
 
         test();
     }
@@ -69,10 +82,8 @@ public class TestUrlClassLoader3 {
 
         Class<?> aClass = myClassLoader.loadClass("com.aaa.plugincommonservice.api.CommonUrlParse");
         Object obj = aClass.newInstance();
-
         // 利用反射创建对象
         Method method = aClass.getMethod("parse");
-
         //获取parse方法
         Object xxx = method.invoke(obj);
 
