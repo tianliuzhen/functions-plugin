@@ -42,10 +42,16 @@ public class TestUrlClassLoader3 {
          *
          * 加载过程：
          *  父加载器 = ExtClassLoader:
-         *      myClassLoader 的父亲是 ExtClassLoader，所以这时候 myClassLoader 跟 appClassLoader 是兄弟关系
-         *      myClassLoader 在加载 CommonUrlParse 时，会加载 JsonFactory，同时遵循双亲委派模式
-         *      所以 ExtClassLoader 会尝试加载 JsonFactory 这个类，不会加载成功，转而由 myClassLoader 自己去加载 JsonFactory，加载成功，版本是2.11
-         *      2.11 版本的 JsonFactory 有 getFormatGeneratorFeatures 方法，所以正常运行
+         *      在 myClassLoader 未设置父加载器之前，其父类加载器是AppClassLoader
+         *          这个时候 AppClassLoader 会从当前core-service应用加载classpath中的类，
+         *          就会加载  jackson-core版本是2.5.4 JsonFactory 这个类，而这个版本没有 getFormatGeneratorFeatures 方法就会报错：java.lang.NoSuchMethodError
+         *
+         *      在 myClassLoader 设置父加载器ExtClassLoader之后
+         *          myClassLoader 的父亲是 ExtClassLoader，所以这时候 myClassLoader 跟 appClassLoader 是兄弟关系
+         *          myClassLoader 在加载 CommonUrlParse 时，会加载 JsonFactory，同时遵循双亲委派模式
+         *          所以 ExtClassLoader 会尝试加载 JsonFactory 这个类，不会加载成功，因为ext只读取扩展库目录
+         *          转而由 myClassLoader 自己去加载 JsonFactory，加载成功，版本是2.11，
+         *          2.11 版本的 JsonFactory 有 getFormatGeneratorFeatures 方法，所以正常运行
          *
          *  父加载器 =  null
          *      这个就比较好理解了，父类为空，只能自己去加载，自己去加载就打破双亲委派机制了，
@@ -75,7 +81,9 @@ public class TestUrlClassLoader3 {
         URL[] urls = new URL[]{file.toURI().toURL(), file2.toURI().toURL(),file3.toURL()};
 
         ClassLoader extClassLoader = TestUrlClassLoader3.class.getClassLoader().getParent();
-        URLClassLoader myClassLoader = new URLClassLoader(urls, extClassLoader);
+        URLClassLoader myClassLoader = new URLClassLoader(urls,extClassLoader);
+        System.out.println(myClassLoader);
+        System.out.println(myClassLoader.getParent());
 
         // 设置父加载器为null跟 extClassLoader 加载效果是一样的，都能读取jackson-core-2.11.0.jar
         // URLClassLoader myClassLoader = new URLClassLoader(urls, null);
