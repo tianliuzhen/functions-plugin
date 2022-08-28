@@ -45,7 +45,7 @@ public class TestUrlClassLoader1 {
          * 当前类加载jackson-core 版本是：2.5.4，
          * 所以执行会报错：java.lang.NoSuchMethodError
          */
-        URLClassLoader myClassLoader = new URLClassLoader(urls,null);
+        URLClassLoader myClassLoader = new URLClassLoader(urls);
         Class<?> aClass = myClassLoader.loadClass("com.aaa.plugincommonservice.api.CommonUrlParse");
         Object obj = aClass.newInstance();
         // 利用反射创建对象
