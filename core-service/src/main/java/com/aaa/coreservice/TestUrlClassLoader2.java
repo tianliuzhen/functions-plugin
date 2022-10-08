@@ -30,6 +30,10 @@ public class TestUrlClassLoader2 {
         System.out.println("Boot: " + StringUtils.class.getResource("").getPath());
         // 模拟调用插件包
 
+        /**
+         * 这个是为了，测试 URLClassLoader 加载的jar，都是从指定源读取的。
+         * 如下：不导入：jackson-core-2.11.0.jar、plugin-common-service-0.0.1-SNAPSHOT.jar
+         */
         testSuccess();
     }
 
