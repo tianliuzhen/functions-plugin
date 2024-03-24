@@ -18,12 +18,6 @@ import java.net.URLClassLoader;
  */
 public class TestUrlClassLoader2 {
     public static void main(String[] args) throws Exception {
-
-        // /加载插件包  读取位置： resources/plugin/plugin-provider.jar
-        // ClassPathResource resource = new ClassPathResource("plugin/plugin-provider.jar");
-        // 打印插件包路径
-        // System.out.println(resource.getURL().getPath());
-
         // 打印当前类加载器
         System.out.println("Boot: " + TestUrlClassLoader2.class.getClass().getClassLoader());
         // 获取StringUtils的类全路径
@@ -33,6 +27,9 @@ public class TestUrlClassLoader2 {
         /**
          * 这个是为了，测试 URLClassLoader 加载的jar，都是从指定源读取的。
          * 如下：不导入：jackson-core-2.11.0.jar、plugin-common-service-0.0.1-SNAPSHOT.jar
+         * 而 FunctionExecutorService 位于 plugin-common-service-0.0.1-SNAPSHOT.jar 中
+         * 也能从 当前父类加载器中，读取到 FunctionExecutorService
+         * 因为 CommonUrlParse 是 FunctionExecutorService 接口的实现类
          */
         testSuccess();
     }
@@ -42,7 +39,7 @@ public class TestUrlClassLoader2 {
         File file = new File("F:\\WorkSpace\\MyGithub\\functions\\plugin-biz\\target\\plugin-biz-0.0.1-SNAPSHOT.jar");
         URL[] urls = new URL[]{file.toURI().toURL()};
 
-        URLClassLoader myClassLoader = new URLClassLoader(urls, null);
+        URLClassLoader myClassLoader = new URLClassLoader(urls);
 
         // URLClassLoader myClassLoader = new PluginClassLoader(urls);
 
